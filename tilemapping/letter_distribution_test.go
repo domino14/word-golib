@@ -5,11 +5,7 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
-
-	"github.com/domino14/word-golib/config"
 )
-
-var DefaultConfig = config.DefaultConfig()
 
 func TestLetterDistributionScores(t *testing.T) {
 	is := is.New(t)

@@ -4,8 +4,6 @@ import (
 	"encoding/csv"
 	"io"
 	"strconv"
-
-	"github.com/domino14/word-golib/config"
 )
 
 // LetterDistribution encodes the tile distribution for the relevant game.
@@ -110,7 +108,7 @@ func (ld *LetterDistribution) Distribution() []uint8 {
 }
 
 // EnglishLetterDistribution returns the English letter distribution.
-func EnglishLetterDistribution(cfg *config.Config) (*LetterDistribution, error) {
+func EnglishLetterDistribution(cfg map[string]any) (*LetterDistribution, error) {
 	return NamedLetterDistribution(cfg, "english")
 }
 

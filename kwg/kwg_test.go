@@ -2,14 +2,17 @@ package kwg
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/matryer/is"
-
-	"github.com/domino14/word-golib/config"
 )
 
-var DefaultConfig = config.DefaultConfig()
+var DefaultConfig = map[string]any{
+	"DataPath":                  os.Getenv("DATA_PATH"),
+	"DefaultLexicon":            "NWL20",
+	"DefaultLetterDistribution": "English",
+}
 
 func TestLoadKWG(t *testing.T) {
 	is := is.New(t)

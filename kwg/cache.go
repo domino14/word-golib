@@ -8,7 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/domino14/word-golib/cache"
-	"github.com/domino14/word-golib/config"
 	"github.com/domino14/word-golib/tilemapping"
 )
 
@@ -17,12 +16,16 @@ const (
 )
 
 // CacheLoadFunc is the function that loads an object into the global cache.
-func CacheLoadFunc(cfg *config.Config, key string) (interface{}, error) {
+func CacheLoadFunc(cfg map[string]any, key string) (interface{}, error) {
 	lexiconName := strings.TrimPrefix(key, CacheKeyPrefix)
-	return LoadKWG(cfg, filepath.Join(cfg.GetString("DataPath"), "lexica", "gaddag", lexiconName+".kwg"))
+	if dataPath, ok := cfg["DataPath"].(string); !ok {
+		return nil, errors.New("could not find DataPath in the configuration")
+	} else {
+		return LoadKWG(cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"))
+	}
 }
 
-func LoadKWG(cfg *config.Config, filename string) (*KWG, error) {
+func LoadKWG(cfg map[string]any, filename string) (*KWG, error) {
 	log.Debug().Msgf("Loading %v ...", filename)
 	file, filesize, err := cache.Open(filename)
 	if err != nil {
@@ -84,7 +87,7 @@ func LoadKWG(cfg *config.Config, filename string) (*KWG, error) {
 }
 
 // Get loads a named KWG from the cache or from a file
-func Get(cfg *config.Config, name string) (*KWG, error) {
+func Get(cfg map[string]any, name string) (*KWG, error) {
 
 	key := CacheKeyPrefix + name
 	obj, err := cache.Load(cfg, key, CacheLoadFunc)

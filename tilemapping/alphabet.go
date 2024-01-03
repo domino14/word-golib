@@ -2,12 +2,17 @@ package tilemapping
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/rs/zerolog/log"
-
-	"github.com/domino14/word-golib/config"
 )
+
+var DefaultConfig = map[string]any{
+	"DataPath":                  os.Getenv("DATA_PATH"),
+	"DefaultLexicon":            "NWL20",
+	"DefaultLetterDistribution": "English",
+}
 
 // A "letter" or tile is internally represented by a byte.
 // The 0 value is used to represent various things:
@@ -278,8 +283,7 @@ func (rm *TileMapping) Reconcile(letters []string) {
 // alphabet. This function should be used for testing. In production
 // we will load the alphabet from the gaddag.
 func EnglishAlphabet() *TileMapping {
-	cfg := config.DefaultConfig()
-	ld, err := GetDistribution(cfg, "english")
+	ld, err := GetDistribution(DefaultConfig, "english")
 	if err != nil {
 		panic(err)
 	}
