@@ -1,12 +1,19 @@
 package tilemapping
 
 import (
+	"os"
 	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/matryer/is"
 )
+
+var DefaultConfig = map[string]any{
+	"data-path":                   os.Getenv("DATA_PATH"),
+	"default-lexicon":             "NWL20",
+	"default-letter-distribution": "English",
+}
 
 func TestBag(t *testing.T) {
 	is := is.New(t)

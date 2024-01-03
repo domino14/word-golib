@@ -2,17 +2,10 @@ package tilemapping
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/rs/zerolog/log"
 )
-
-var DefaultConfig = map[string]any{
-	"data-path":                   os.Getenv("DATA_PATH"),
-	"default-lexicon":             "NWL20",
-	"default-letter-distribution": "English",
-}
 
 // A "letter" or tile is internally represented by a byte.
 // The 0 value is used to represent various things:
@@ -277,15 +270,4 @@ func (rm *TileMapping) Reconcile(letters []string) {
 		Interface("vals", rm.vals).
 		Int("maxTileLength", rm.maxTileLength).
 		Msg("TileMapping-letters")
-}
-
-// EnglishAlphabet returns a TileMapping that corresponds to the English
-// alphabet. This function should be used for testing. In production
-// we will load the alphabet from the gaddag.
-func EnglishAlphabet() *TileMapping {
-	ld, err := GetDistribution(DefaultConfig, "english")
-	if err != nil {
-		panic(err)
-	}
-	return ld.TileMapping()
 }

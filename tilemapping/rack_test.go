@@ -7,6 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func EnglishAlphabet() *TileMapping {
+	ld, err := GetDistribution(DefaultConfig, "english")
+	if err != nil {
+		panic(err)
+	}
+	return ld.TileMapping()
+}
+
 func TestScoreOn(t *testing.T) {
 	is := is.New(t)
 
