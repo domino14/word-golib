@@ -9,9 +9,9 @@ import (
 )
 
 var DefaultConfig = map[string]any{
-	"DataPath":                  os.Getenv("DATA_PATH"),
-	"DefaultLexicon":            "NWL20",
-	"DefaultLetterDistribution": "English",
+	"data-path":                   os.Getenv("DATA_PATH"),
+	"default-lexicon":             "NWL20",
+	"default-letter-distribution": "English",
 }
 
 // A "letter" or tile is internally represented by a byte.

@@ -22,8 +22,8 @@ func NamedLetterDistribution(cfg map[string]any, name string) (*LetterDistributi
 	name = strings.ToLower(name)
 	var dataPath string
 	var ok bool
-	if dataPath, ok = cfg["DataPath"].(string); !ok {
-		return nil, errors.New("could not find DataPath in the configuration")
+	if dataPath, ok = cfg["data-path"].(string); !ok {
+		return nil, errors.New("could not find data-path in the configuration")
 	}
 
 	filename := filepath.Join(dataPath, "letterdistributions", name)

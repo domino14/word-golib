@@ -18,8 +18,8 @@ const (
 // CacheLoadFunc is the function that loads an object into the global cache.
 func CacheLoadFunc(cfg map[string]any, key string) (interface{}, error) {
 	lexiconName := strings.TrimPrefix(key, CacheKeyPrefix)
-	if dataPath, ok := cfg["DataPath"].(string); !ok {
-		return nil, errors.New("could not find DataPath in the configuration")
+	if dataPath, ok := cfg["data-path"].(string); !ok {
+		return nil, errors.New("could not find data-path in the configuration")
 	} else {
 		return LoadKWG(cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"))
 	}
