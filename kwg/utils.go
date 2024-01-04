@@ -10,7 +10,7 @@ func FindWord(d *KWG, word string) bool {
 	return findWord(d, d.ArcIndex(0), word)
 }
 
-// FindMachineWord finds a word in a LWG
+// FindMachineWord finds a word in a KWG
 func FindMachineWord(d *KWG, word tilemapping.MachineWord) bool {
 	return findMachineWord(d, d.ArcIndex(0), word)
 }
