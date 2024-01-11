@@ -20,7 +20,7 @@ func (l Lexicon) HasWord(word tilemapping.MachineWord) bool {
 	return FindMachineWord(&l.KWG, word)
 }
 
-var daPool = sync.Pool{
+var DaPool = sync.Pool{
 	New: func() interface{} {
 		return &KWGAnagrammer{}
 	},
@@ -29,8 +29,8 @@ var daPool = sync.Pool{
 func (l Lexicon) HasAnagram(word tilemapping.MachineWord) bool {
 	log.Debug().Str("word", word.UserVisible(l.GetAlphabet())).Msg("has-anagram?")
 
-	da := daPool.Get().(*KWGAnagrammer)
-	defer daPool.Put(da)
+	da := DaPool.Get().(*KWGAnagrammer)
+	defer DaPool.Put(da)
 
 	v, err := da.IsValidJumble(&l.KWG, word)
 	if err != nil {
