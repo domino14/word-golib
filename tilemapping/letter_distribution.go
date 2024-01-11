@@ -2,8 +2,10 @@ package tilemapping
 
 import (
 	"encoding/csv"
+	"errors"
 	"io"
 	"strconv"
+	"strings"
 )
 
 // LetterDistribution encodes the tile distribution for the relevant game.
@@ -123,4 +125,41 @@ func (ld *LetterDistribution) MakeBag() *Bag {
 
 func (ld *LetterDistribution) NumTotalLetters() uint {
 	return ld.numLetters
+}
+
+// ProbableLetterDistribution returns a letter distribution given a lexicon name.
+// It makes a best guess for the letter distribution, assuming that it would be
+// the "standard" one for that lexicon.
+func ProbableLetterDistribution(cfg map[string]any, lexname string) (*LetterDistribution, error) {
+	lexname = strings.ToLower(lexname)
+	var ldName string
+	switch {
+	case strings.HasPrefix(lexname, "nwl") ||
+		strings.HasPrefix(lexname, "nswl") ||
+		strings.HasPrefix(lexname, "twl") ||
+		strings.HasPrefix(lexname, "owl") ||
+		strings.HasPrefix(lexname, "csw") ||
+		strings.HasPrefix(lexname, "america") ||
+		strings.HasPrefix(lexname, "cel") ||
+		strings.HasPrefix(lexname, "ecwl"):
+
+		ldName = "english"
+
+	// more cases here
+	case strings.HasPrefix(lexname, "osps"):
+		ldName = "polish"
+	case strings.HasPrefix(lexname, "nsf"):
+		ldName = "norwegian"
+	case strings.HasPrefix(lexname, "fra"):
+		ldName = "french"
+	case strings.HasPrefix(lexname, "rd"):
+		ldName = "german"
+	case strings.HasPrefix(lexname, "disc"):
+		ldName = "catalan"
+	case strings.HasPrefix(lexname, "fise"):
+		ldName = "spanish"
+	default:
+		return nil, errors.New("cannot determine alphabet from lexicon name " + lexname)
+	}
+	return NamedLetterDistribution(cfg, ldName)
 }

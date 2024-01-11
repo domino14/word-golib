@@ -46,38 +46,8 @@ func LoadKWG(cfg map[string]any, filename string) (*KWG, error) {
 		return nil, err
 	}
 	kwg.lexiconName = lexname
-	lexname = strings.ToLower(lexname)
-	var alphabetName string
-	switch {
-	case strings.HasPrefix(lexname, "nwl") ||
-		strings.HasPrefix(lexname, "nswl") ||
-		strings.HasPrefix(lexname, "twl") ||
-		strings.HasPrefix(lexname, "owl") ||
-		strings.HasPrefix(lexname, "csw") ||
-		strings.HasPrefix(lexname, "america") ||
-		strings.HasPrefix(lexname, "cel") ||
-		strings.HasPrefix(lexname, "ecwl"):
 
-		alphabetName = "english"
-
-	// more cases here
-	case strings.HasPrefix(lexname, "osps"):
-		alphabetName = "polish"
-	case strings.HasPrefix(lexname, "nsf"):
-		alphabetName = "norwegian"
-	case strings.HasPrefix(lexname, "fra"):
-		alphabetName = "french"
-	case strings.HasPrefix(lexname, "rd"):
-		alphabetName = "german"
-	case strings.HasPrefix(lexname, "disc"):
-		alphabetName = "catalan"
-	case strings.HasPrefix(lexname, "fise"):
-		alphabetName = "spanish"
-	default:
-		return nil, errors.New("cannot determine alphabet from lexicon name " + lexname)
-	}
-
-	ld, err := tilemapping.NamedLetterDistribution(cfg, alphabetName)
+	ld, err := tilemapping.ProbableLetterDistribution(cfg, lexname)
 	if err != nil {
 		return nil, err
 	}
