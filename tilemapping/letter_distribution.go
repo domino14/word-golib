@@ -152,7 +152,8 @@ func ProbableLetterDistribution(cfg map[string]any, lexname string) (*LetterDist
 		ldName = "norwegian"
 	case strings.HasPrefix(lexname, "fra"):
 		ldName = "french"
-	case strings.HasPrefix(lexname, "rd"):
+	case strings.HasPrefix(lexname, "rd") ||
+		strings.HasPrefix(lexname, "deutsch"):
 		ldName = "german"
 	case strings.HasPrefix(lexname, "disc"):
 		ldName = "catalan"
