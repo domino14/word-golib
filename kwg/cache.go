@@ -21,7 +21,11 @@ func CacheLoadFunc(cfg map[string]any, key string) (interface{}, error) {
 	if dataPath, ok := cfg["data-path"].(string); !ok {
 		return nil, errors.New("could not find data-path in the configuration")
 	} else {
-		return LoadKWG(cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"))
+		kwgPrefix, ok := cfg["kwg-path-prefix"].(string)
+		if !ok {
+			return LoadKWG(cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"))
+		}
+		return LoadKWG(cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kwg"))
 	}
 }
 
