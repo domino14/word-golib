@@ -20,19 +20,12 @@ type KWG struct {
 }
 
 func ScanKWG(data io.Reader, filesize int) (*KWG, error) {
-	nodes := make([]uint32, 0, filesize/4)
-	var node uint32
-
-	for {
-		err := binary.Read(data, binary.LittleEndian, &node)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-		nodes = append(nodes, node)
+	nodes := make([]uint32, filesize/4)
+	err := binary.Read(data, binary.LittleEndian, nodes)
+	if err != nil {
+		return nil, err
 	}
+
 	log.Debug().Int("num-nodes", len(nodes)).Msg("loaded-kwg")
 	return &KWG{nodes: nodes}, nil
 }
