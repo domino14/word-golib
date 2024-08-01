@@ -7,22 +7,22 @@ import (
 	"strings"
 
 	"github.com/domino14/word-golib/cache"
+	"github.com/domino14/word-golib/config"
 )
 
 var CacheKeyPrefix = "letterdist:"
 
 // CacheLoadFunc is the function that loads an object into the global cache.
-func CacheLoadFunc(cfg map[string]any, key string) (interface{}, error) {
+func CacheLoadFunc(cfg *config.Config, key string) (interface{}, error) {
 	dist := strings.TrimPrefix(key, CacheKeyPrefix)
 	return NamedLetterDistribution(cfg, dist)
 }
 
 // NamedLetterDistribution loads a letter distribution by name.
-func NamedLetterDistribution(cfg map[string]any, name string) (*LetterDistribution, error) {
+func NamedLetterDistribution(cfg *config.Config, name string) (*LetterDistribution, error) {
 	name = strings.ToLower(name)
-	var dataPath string
-	var ok bool
-	if dataPath, ok = cfg["data-path"].(string); !ok {
+	var dataPath = cfg.DataPath
+	if dataPath == "" {
 		return nil, errors.New("could not find data-path in the configuration")
 	}
 
@@ -54,7 +54,7 @@ func Set(name string, data []byte) error {
 }
 
 // Get loads a named alphabet from the cache or from a file
-func GetDistribution(cfg map[string]any, name string) (*LetterDistribution, error) {
+func GetDistribution(cfg *config.Config, name string) (*LetterDistribution, error) {
 	key := CacheKeyPrefix + name
 	obj, err := cache.Load(cfg, key, CacheLoadFunc)
 	if err != nil {

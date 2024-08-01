@@ -6,6 +6,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/domino14/word-golib/config"
 )
 
 // LetterDistribution encodes the tile distribution for the relevant game.
@@ -110,7 +112,7 @@ func (ld *LetterDistribution) Distribution() []uint8 {
 }
 
 // EnglishLetterDistribution returns the English letter distribution.
-func EnglishLetterDistribution(cfg map[string]any) (*LetterDistribution, error) {
+func EnglishLetterDistribution(cfg *config.Config) (*LetterDistribution, error) {
 	return NamedLetterDistribution(cfg, "english")
 }
 
@@ -130,7 +132,7 @@ func (ld *LetterDistribution) NumTotalLetters() uint {
 // ProbableLetterDistribution returns a letter distribution given a lexicon name.
 // It makes a best guess for the letter distribution, assuming that it would be
 // the "standard" one for that lexicon.
-func ProbableLetterDistribution(cfg map[string]any, lexname string) (*LetterDistribution, error) {
+func ProbableLetterDistribution(cfg *config.Config, lexname string) (*LetterDistribution, error) {
 	lexname = strings.ToLower(lexname)
 	var ldName string
 	switch {

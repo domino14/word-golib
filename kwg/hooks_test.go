@@ -3,13 +3,14 @@ package kwg
 import (
 	"testing"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/domino14/word-golib/tilemapping"
 	"github.com/matryer/is"
 )
 
 func TestHooks(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "CSW21")
+	d, err := Get(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 
 	// AE

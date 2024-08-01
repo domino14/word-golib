@@ -1,24 +1,18 @@
 package tilemapping
 
 import (
-	"os"
 	"reflect"
 	"sort"
 	"testing"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/matryer/is"
 )
-
-var DefaultConfig = map[string]any{
-	"data-path":                   os.Getenv("DATA_PATH"),
-	"default-lexicon":             "NWL20",
-	"default-letter-distribution": "English",
-}
 
 func TestBag(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	bag := ld.MakeBag()
 	if uint(len(bag.tiles)) != ld.numLetters {
@@ -51,7 +45,7 @@ func TestBag(t *testing.T) {
 func TestDraw(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	bag := ld.MakeBag()
 	ml := make([]MachineLetter, 7)
@@ -66,7 +60,7 @@ func TestDraw(t *testing.T) {
 func TestDrawAtMost(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	if err != nil {
 		t.Error(err)
 	}
@@ -99,7 +93,7 @@ func TestDrawAtMost(t *testing.T) {
 func TestExchange(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	bag := ld.MakeBag()
 	ml := make([]MachineLetter, 7)
@@ -114,7 +108,7 @@ func TestExchange(t *testing.T) {
 func TestRemoveTiles(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	bag := ld.MakeBag()
 	is.Equal(len(bag.tiles), 100)
@@ -134,7 +128,7 @@ func TestRemoveTiles(t *testing.T) {
 func TestFixedOrder(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	bag := NewBag(ld, ld.tilemapping)
 	sort.Slice(bag.tiles, func(i, j int) bool { return bag.tiles[i] > bag.tiles[j] })

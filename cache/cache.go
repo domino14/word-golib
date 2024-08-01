@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/rs/zerolog/log"
 )
 
@@ -18,7 +19,7 @@ type cache struct {
 	objects map[string]interface{}
 }
 
-type loadFunc func(cfg map[string]any, key string) (interface{}, error)
+type loadFunc func(cfg *config.Config, key string) (interface{}, error)
 
 type readFunc func(data []byte) (interface{}, error)
 
@@ -33,7 +34,7 @@ func (c *cache) Keys() []string {
 	return keys
 }
 
-func (c *cache) load(cfg map[string]any, key string, loadFunc loadFunc) error {
+func (c *cache) load(cfg *config.Config, key string, loadFunc loadFunc) error {
 	log.Debug().Str("key", key).Msg("loading into cache")
 
 	obj, err := loadFunc(cfg, key)
@@ -45,7 +46,7 @@ func (c *cache) load(cfg map[string]any, key string, loadFunc loadFunc) error {
 	return nil
 }
 
-func (c *cache) get(cfg map[string]any, key string, loadFunc loadFunc, needToLock bool) (interface{}, error) {
+func (c *cache) get(cfg *config.Config, key string, loadFunc loadFunc, needToLock bool) (interface{}, error) {
 
 	var ok bool
 	var obj interface{}
@@ -75,7 +76,7 @@ func init() {
 	GlobalObjectCache = &cache{objects: make(map[string]interface{})}
 }
 
-func Load(cfg map[string]any, name string, loadFunc loadFunc) (interface{}, error) {
+func Load(cfg *config.Config, name string, loadFunc loadFunc) (interface{}, error) {
 	return GlobalObjectCache.get(cfg, name, loadFunc, true)
 }
 
@@ -85,7 +86,7 @@ func Open(filename string) (io.ReadCloser, int, error) {
 	// Hopefully it works.
 
 	cached, err := GlobalObjectCache.get(nil, "file:"+filename,
-		func(map[string]any, string) (interface{}, error) {
+		func(*config.Config, string) (interface{}, error) {
 			return nil, os.ErrNotExist
 		}, false)
 	if err != nil {
@@ -108,7 +109,7 @@ func Open(filename string) (io.ReadCloser, int, error) {
 func Precache(filename string, rawBytes []byte) {
 	log.Debug().Str("filename", filename).Msg("populating into cache")
 	Load(nil, "file:"+filename,
-		func(map[string]any, string) (interface{}, error) {
+		func(*config.Config, string) (interface{}, error) {
 			return rawBytes, nil
 		})
 }

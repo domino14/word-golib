@@ -6,13 +6,14 @@ import (
 
 	"github.com/matryer/is"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/domino14/word-golib/tilemapping"
 )
 
 func BenchmarkAnagramBlanks(b *testing.B) {
 	// ~0.62 ms on 12thgen-monolith
 	is := is.New(b)
-	kwg, err := Get(DefaultConfig, "CSW21")
+	kwg, err := Get(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := kwg.GetAlphabet()
 
@@ -33,7 +34,7 @@ func BenchmarkAnagramBlanks(b *testing.B) {
 
 func TestAnagramBlanks(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "CSW21")
+	d, err := Get(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := d.GetAlphabet()
 
@@ -54,7 +55,7 @@ func TestAnagramBlanks(t *testing.T) {
 
 func TestAnagram(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "CSW21")
+	d, err := Get(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := d.GetAlphabet()
 
@@ -114,7 +115,7 @@ var findWordTests = []testpair{
 
 func TestFindMachineWord(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "NWL20")
+	d, err := Get(config.DefaultConfig, "NWL20")
 	is.NoErr(err)
 	l := Lexicon{KWG: *d}
 
@@ -137,7 +138,7 @@ var findNorwegianWordTests = []testpair{
 
 func TestFindMachineWordNorwegian(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "NSF22")
+	d, err := Get(config.DefaultConfig, "NSF22")
 	is.NoErr(err)
 	l := Lexicon{KWG: *d}
 
@@ -162,7 +163,7 @@ var hasAnagramNorwegianTests = []testpair{
 
 func TestHasAnagramNorwegian(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "NSF22")
+	d, err := Get(config.DefaultConfig, "NSF22")
 	is.NoErr(err)
 	l := Lexicon{KWG: *d}
 
@@ -178,7 +179,7 @@ func TestHasAnagramNorwegian(t *testing.T) {
 
 func TestHasAnagramEnglish(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(DefaultConfig, "CSW21")
+	d, err := Get(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	l := Lexicon{KWG: *d}
 

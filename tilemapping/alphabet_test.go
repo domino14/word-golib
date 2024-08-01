@@ -3,12 +3,13 @@ package tilemapping
 import (
 	"testing"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/matryer/is"
 )
 
 func TestToMachineLetters(t *testing.T) {
 	is := is.New(t)
-	cat, err := GetDistribution(DefaultConfig, "catalan")
+	cat, err := GetDistribution(config.DefaultConfig, "catalan")
 	is.NoErr(err)
 	// AL·LOQUIMIQUES is only 10 tiles despite being 14 codepoints long.
 	// A L·L O QU I M I QU E S
@@ -37,7 +38,7 @@ func TestToMachineLetters(t *testing.T) {
 
 func TestUV(t *testing.T) {
 	is := is.New(t)
-	cat, err := GetDistribution(DefaultConfig, "catalan")
+	cat, err := GetDistribution(config.DefaultConfig, "catalan")
 	is.NoErr(err)
 
 	uv := MachineWord([]MachineLetter{
@@ -53,14 +54,14 @@ func TestUV(t *testing.T) {
 
 func TestCts(t *testing.T) {
 	is := is.New(t)
-	eng, err := GetDistribution(DefaultConfig, "english")
+	eng, err := GetDistribution(config.DefaultConfig, "english")
 	is.NoErr(err)
 	is.Equal(eng.TileMapping().NumLetters(), uint8(27))
 }
 
 func TestIsVowel(t *testing.T) {
 	is := is.New(t)
-	eng, err := GetDistribution(DefaultConfig, "english")
+	eng, err := GetDistribution(config.DefaultConfig, "english")
 	is.NoErr(err)
 	is.True(MachineLetter(5).IsVowel(eng))
 	is.True(MachineLetter(9).IsVowel(eng))

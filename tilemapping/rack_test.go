@@ -3,12 +3,13 @@ package tilemapping
 import (
 	"testing"
 
+	"github.com/domino14/word-golib/config"
 	"github.com/matryer/is"
 	"github.com/stretchr/testify/assert"
 )
 
 func EnglishAlphabet() *TileMapping {
-	ld, err := GetDistribution(DefaultConfig, "english")
+	ld, err := GetDistribution(config.DefaultConfig, "english")
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +19,7 @@ func EnglishAlphabet() *TileMapping {
 func TestScoreOn(t *testing.T) {
 	is := is.New(t)
 
-	ld, err := EnglishLetterDistribution(DefaultConfig)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
 	is.NoErr(err)
 	type racktest struct {
 		rack string
