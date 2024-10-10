@@ -159,7 +159,7 @@ func ProbableLetterDistribution(cfg *config.Config, lexname string) (*LetterDist
 		ldName = "german"
 	case strings.HasPrefix(lexname, "disc"):
 		ldName = "catalan"
-	case strings.HasPrefix(lexname, "fise"):
+	case strings.HasPrefix(lexname, "fise") || strings.HasPrefix(lexname, "file"):
 		ldName = "spanish"
 	default:
 		return nil, errors.New("cannot determine alphabet from lexicon name " + lexname)
