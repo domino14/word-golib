@@ -129,10 +129,10 @@ func (ld *LetterDistribution) NumTotalLetters() uint {
 	return ld.numLetters
 }
 
-// ProbableLetterDistribution returns a letter distribution given a lexicon name.
+// ProbableLetterDistributionName returns a letter distribution name given a lexicon name.
 // It makes a best guess for the letter distribution, assuming that it would be
 // the "standard" one for that lexicon.
-func ProbableLetterDistribution(cfg *config.Config, lexname string) (*LetterDistribution, error) {
+func ProbableLetterDistributionName(lexname string) (string, error) {
 	lexname = strings.ToLower(lexname)
 	var ldName string
 	switch {
@@ -162,7 +162,18 @@ func ProbableLetterDistribution(cfg *config.Config, lexname string) (*LetterDist
 	case strings.HasPrefix(lexname, "fise") || strings.HasPrefix(lexname, "file"):
 		ldName = "spanish"
 	default:
-		return nil, errors.New("cannot determine alphabet from lexicon name " + lexname)
+		return "", errors.New("cannot determine alphabet from lexicon name " + lexname)
+	}
+	return ldName, nil
+}
+
+// ProbableLetterDistribution returns a letter distribution given a lexicon name.
+// It makes a best guess for the letter distribution, assuming that it would be
+// the "standard" one for that lexicon.
+func ProbableLetterDistribution(cfg *config.Config, lexname string) (*LetterDistribution, error) {
+	ldName, err := ProbableLetterDistributionName(lexname)
+	if err != nil {
+		return nil, err
 	}
 	return NamedLetterDistribution(cfg, ldName)
 }
