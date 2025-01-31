@@ -11,7 +11,6 @@ type Rack struct {
 	LetArr             []int
 	numLetters         uint8
 	alphabet           *TileMapping
-	repr               string
 	numPossibleLetters uint8
 	// letterIdxs []uint8
 }
@@ -35,7 +34,6 @@ func (r *Rack) Copy() *Rack {
 	n := &Rack{
 		numLetters:         r.numLetters,
 		alphabet:           r.alphabet,
-		repr:               r.repr,
 		numPossibleLetters: r.numPossibleLetters,
 	}
 	n.LetArr = make([]int, len(r.LetArr))
@@ -46,7 +44,6 @@ func (r *Rack) Copy() *Rack {
 func (r *Rack) CopyFrom(other *Rack) {
 	r.numLetters = other.numLetters
 	r.alphabet = other.alphabet
-	r.repr = other.repr
 	r.numPossibleLetters = other.numPossibleLetters
 	if r.LetArr == nil {
 		r.LetArr = make([]int, len(other.LetArr))
