@@ -155,7 +155,8 @@ func ProbableLetterDistributionName(lexname string) (string, error) {
 	case strings.HasPrefix(lexname, "fra"):
 		ldName = "french"
 	case strings.HasPrefix(lexname, "rd") ||
-		strings.HasPrefix(lexname, "deutsch"):
+		strings.HasPrefix(lexname, "deutsch") ||
+		strings.HasPrefix(lexname, "cgl"):
 		ldName = "german"
 	case strings.HasPrefix(lexname, "disc"):
 		ldName = "catalan"
