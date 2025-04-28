@@ -162,6 +162,8 @@ func ProbableLetterDistributionName(lexname string) (string, error) {
 		ldName = "catalan"
 	case strings.HasPrefix(lexname, "fise") || strings.HasPrefix(lexname, "file"):
 		ldName = "spanish"
+	case strings.HasPrefix(lexname, "dsw"):
+		ldName = "dutch"
 	default:
 		return "", errors.New("cannot determine alphabet from lexicon name " + lexname)
 	}
