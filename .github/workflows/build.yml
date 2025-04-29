@@ -27,6 +27,7 @@ jobs:
       - run: mv $GITHUB_WORKSPACE/word-game-lexica /opt/word-game-lexica
       - run: mkdir -p /opt/data/lexica/gaddag
       - run: mv /opt/word-game-lexica/gaddag/*.kwg /opt/data/lexica/gaddag
+      - run: mv /opt/word-game-lexica/letterdistributions /opt/data/letterdistributions
 
       - name: Setup Go
         uses: actions/setup-go@v5
