@@ -125,8 +125,20 @@ func CacheLoadFuncKBWG(cfg *config.Config, key string) (interface{}, error) {
 	return LoadWordGraph(cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kbwg"))
 }
 
+func GetGraph(cfg *config.Config, name string) (WordGraph, error) {
+	k, err := getKWG(cfg, name)
+	if err != nil {
+		kb, err := getKBWG(cfg, name)
+		if err != nil {
+			return nil, err
+		}
+		return kb, nil
+	}
+	return k, nil
+}
+
 // Get loads a named KWG from the cache or from a file (for backward compatibility)
-func Get(cfg *config.Config, name string) (*KWG, error) {
+func getKWG(cfg *config.Config, name string) (*KWG, error) {
 	key := CacheKeyPrefixKWG + name
 	obj, err := cache.Load(cfg, key, CacheLoadFuncKWG)
 	if err != nil {
@@ -141,7 +153,7 @@ func Get(cfg *config.Config, name string) (*KWG, error) {
 }
 
 // GetKBWG loads a named KBWG from the cache or from a file
-func GetKBWG(cfg *config.Config, name string) (*KBWG, error) {
+func getKBWG(cfg *config.Config, name string) (*KBWG, error) {
 	key := CacheKeyPrefixKBWG + name
 	obj, err := cache.Load(cfg, key, CacheLoadFuncKBWG)
 	if err != nil {
@@ -153,12 +165,4 @@ func GetKBWG(cfg *config.Config, name string) (*KBWG, error) {
 		return nil, errors.New("could not convert WordGraph to KBWG")
 	}
 	return kbwg, nil
-}
-
-// GetWordGraph loads either a KWG or KBWG based on the isKBWG flag
-func GetWordGraph(cfg *config.Config, name string, isKBWG bool) (WordGraph, error) {
-	if isKBWG {
-		return GetKBWG(cfg, name)
-	}
-	return Get(cfg, name)
 }

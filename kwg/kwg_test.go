@@ -9,7 +9,7 @@ import (
 
 func TestLoadKWG(t *testing.T) {
 	is := is.New(t)
-	kwg, err := Get(config.DefaultConfig, "NWL20")
+	kwg, err := getKWG(config.DefaultConfig, "NWL20")
 	is.NoErr(err)
 	is.Equal(len(kwg.nodes), 855967)
 }

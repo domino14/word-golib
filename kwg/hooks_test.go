@@ -10,7 +10,7 @@ import (
 
 func TestHooks(t *testing.T) {
 	is := is.New(t)
-	d, err := Get(config.DefaultConfig, "CSW21")
+	d, err := getKWG(config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 
 	// AE
