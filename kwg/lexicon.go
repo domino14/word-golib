@@ -9,7 +9,7 @@ import (
 )
 
 type Lexicon struct {
-	KWG
+	WordGraph
 }
 
 func (l Lexicon) Name() string {
@@ -17,7 +17,7 @@ func (l Lexicon) Name() string {
 }
 
 func (l Lexicon) HasWord(word tilemapping.MachineWord) bool {
-	return FindMachineWord(&l.KWG, word)
+	return FindMachineWord(l.WordGraph, word)
 }
 
 var DaPool = sync.Pool{
@@ -32,7 +32,7 @@ func (l Lexicon) HasAnagram(word tilemapping.MachineWord) bool {
 	da := DaPool.Get().(*KWGAnagrammer)
 	defer DaPool.Put(da)
 
-	v, err := da.IsValidJumble(&l.KWG, word)
+	v, err := da.IsValidJumble(l.WordGraph, word)
 	if err != nil {
 		log.Err(err).Str("word", word.UserVisible(l.GetAlphabet())).Msg("has-anagram?-error")
 		return false
