@@ -142,10 +142,10 @@ var findNorwegianWordTests = []testpair{
 
 func TestFindMachineWordNorwegian(t *testing.T) {
 	is := is.New(t)
-	// Assuming NSF22 is a KBWG
-	d, err := GetGraph[*KBWG](config.DefaultConfig, "NSF22")
+	// Assuming NSF22 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "NSF22")
 	is.NoErr(err)
-	l := Lexicon[*KBWG]{WordGraph: d}
+	l := Lexicon[*KWG]{WordGraph: d}
 
 	for _, pair := range findNorwegianWordTests {
 		t.Run(pair.prefix, func(t *testing.T) {
@@ -168,10 +168,10 @@ var hasAnagramNorwegianTests = []testpair{
 
 func TestHasAnagramNorwegian(t *testing.T) {
 	is := is.New(t)
-	// Assuming NSF22 is a KBWG
-	d, err := GetGraph[*KBWG](config.DefaultConfig, "NSF22")
+	// Assuming NSF22 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "NSF22")
 	is.NoErr(err)
-	l := Lexicon[*KBWG]{WordGraph: d}
+	l := Lexicon[*KWG]{WordGraph: d}
 
 	for _, pair := range hasAnagramNorwegianTests {
 		t.Run(pair.prefix, func(t *testing.T) {
