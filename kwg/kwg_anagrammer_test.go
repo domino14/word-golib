@@ -13,14 +13,15 @@ import (
 func BenchmarkAnagramBlanks(b *testing.B) {
 	// ~0.62 ms on 12thgen-monolith
 	is := is.New(b)
-	kwg, err := getKWG(config.DefaultConfig, "CSW21")
+	// Assuming CSW21 is a KWG
+	kwg, err := GetGraph[*KWG](config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := kwg.GetAlphabet()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var anags []string
-		da := KWGAnagrammer{}
+		da := KWGAnagrammer[*KWG]{}
 		if err = da.InitForString(kwg, "RETINA??"); err != nil {
 			b.Error(err)
 		} else if err = da.Anagram(kwg, func(word tilemapping.MachineWord) error {
@@ -34,12 +35,13 @@ func BenchmarkAnagramBlanks(b *testing.B) {
 
 func TestAnagramBlanks(t *testing.T) {
 	is := is.New(t)
-	d, err := getKWG(config.DefaultConfig, "CSW21")
+	// Assuming CSW21 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := d.GetAlphabet()
 
 	var anags []string
-	da := KWGAnagrammer{}
+	da := KWGAnagrammer[*KWG]{}
 	if err = da.InitForString(d, "RETINA??"); err != nil {
 		t.Error(err)
 	} else if err = da.Anagram(d, func(word tilemapping.MachineWord) error {
@@ -55,12 +57,13 @@ func TestAnagramBlanks(t *testing.T) {
 
 func TestAnagram(t *testing.T) {
 	is := is.New(t)
-	d, err := getKWG(config.DefaultConfig, "CSW21")
+	// Assuming CSW21 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "CSW21")
 	is.NoErr(err)
 	alph := d.GetAlphabet()
 
 	var anags []string
-	da := KWGAnagrammer{}
+	da := KWGAnagrammer[*KWG]{}
 	if err = da.InitForString(d, "AZ"); err != nil {
 		t.Error(err)
 	} else if err = da.Anagram(d, func(word tilemapping.MachineWord) error {
@@ -115,9 +118,10 @@ var findWordTests = []testpair{
 
 func TestFindMachineWord(t *testing.T) {
 	is := is.New(t)
-	d, err := GetGraph(config.DefaultConfig, "NWL20")
+	// Assuming NWL20 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "NWL20")
 	is.NoErr(err)
-	l := Lexicon{WordGraph: d}
+	l := Lexicon[*KWG]{WordGraph: d}
 
 	for _, pair := range findWordTests {
 		t.Run(pair.prefix, func(t *testing.T) {
@@ -138,9 +142,10 @@ var findNorwegianWordTests = []testpair{
 
 func TestFindMachineWordNorwegian(t *testing.T) {
 	is := is.New(t)
-	d, err := GetGraph(config.DefaultConfig, "NSF22")
+	// Assuming NSF22 is a KBWG
+	d, err := GetGraph[*KBWG](config.DefaultConfig, "NSF22")
 	is.NoErr(err)
-	l := Lexicon{WordGraph: d}
+	l := Lexicon[*KBWG]{WordGraph: d}
 
 	for _, pair := range findNorwegianWordTests {
 		t.Run(pair.prefix, func(t *testing.T) {
@@ -163,9 +168,10 @@ var hasAnagramNorwegianTests = []testpair{
 
 func TestHasAnagramNorwegian(t *testing.T) {
 	is := is.New(t)
-	d, err := GetGraph(config.DefaultConfig, "NSF22")
+	// Assuming NSF22 is a KBWG
+	d, err := GetGraph[*KBWG](config.DefaultConfig, "NSF22")
 	is.NoErr(err)
-	l := Lexicon{WordGraph: d}
+	l := Lexicon[*KBWG]{WordGraph: d}
 
 	for _, pair := range hasAnagramNorwegianTests {
 		t.Run(pair.prefix, func(t *testing.T) {
@@ -179,9 +185,10 @@ func TestHasAnagramNorwegian(t *testing.T) {
 
 func TestHasAnagramEnglish(t *testing.T) {
 	is := is.New(t)
-	d, err := GetGraph(config.DefaultConfig, "CSW21")
+	// Assuming CSW21 is a KWG
+	d, err := GetGraph[*KWG](config.DefaultConfig, "CSW21")
 	is.NoErr(err)
-	l := Lexicon{WordGraph: d}
+	l := Lexicon[*KWG]{WordGraph: d}
 
 	mw, err := tilemapping.ToMachineLetters("AZ", d.GetAlphabet())
 	is.NoErr(err)

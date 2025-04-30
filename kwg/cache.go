@@ -125,16 +125,25 @@ func CacheLoadFuncKBWG(cfg *config.Config, key string) (interface{}, error) {
 	return LoadWordGraph(cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kbwg"))
 }
 
-func GetGraph(cfg *config.Config, name string) (WordGraph, error) {
-	k, err := getKWG(cfg, name)
-	if err != nil {
+func GetGraph[T WordGraphConstraint](cfg *config.Config, name string) (T, error) {
+	var result T
+	switch any(result).(type) {
+	case *KWG:
+		k, err := getKWG(cfg, name)
+		if err != nil {
+			return result, err
+		}
+		result = any(k).(T)
+	case *KBWG:
 		kb, err := getKBWG(cfg, name)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
-		return kb, nil
+		result = any(kb).(T)
+	default:
+		return result, errors.New("unsupported graph type")
 	}
-	return k, nil
+	return result, nil
 }
 
 // Get loads a named KWG from the cache or from a file (for backward compatibility)

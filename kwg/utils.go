@@ -6,16 +6,16 @@ import (
 )
 
 // FindWord finds a word in a KWG
-func FindWord(d WordGraph, word string) bool {
+func FindWord[T WordGraphConstraint](d T, word string) bool {
 	return findWord(d, d.ArcIndex(0), word)
 }
 
 // FindMachineWord finds a word in a KWG
-func FindMachineWord(d WordGraph, word tilemapping.MachineWord) bool {
+func FindMachineWord[T WordGraphConstraint](d T, word tilemapping.MachineWord) bool {
 	return findMachineWord(d, d.ArcIndex(0), word)
 }
 
-func findWord(d WordGraph, nodeIdx uint32, word string) bool {
+func findWord[T WordGraphConstraint](d T, nodeIdx uint32, word string) bool {
 
 	mw, err := tilemapping.ToMachineWord(word, d.GetAlphabet())
 	if err != nil {
@@ -25,7 +25,7 @@ func findWord(d WordGraph, nodeIdx uint32, word string) bool {
 	return findMachineWord(d, nodeIdx, mw)
 }
 
-func findMachineWord(d WordGraph, nodeIdx uint32, word tilemapping.MachineWord) bool {
+func findMachineWord[T WordGraphConstraint](d T, nodeIdx uint32, word tilemapping.MachineWord) bool {
 	if len(word) < 2 {
 		return false
 	}

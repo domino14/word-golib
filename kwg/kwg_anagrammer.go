@@ -7,15 +7,30 @@ import (
 	"github.com/domino14/word-golib/tilemapping"
 )
 
+// WordGraphConstraint is a type constraint for types that can be used as a word graph.
+type WordGraphConstraint interface {
+	*KWG | *KBWG
+	GetRootNodeIndex() uint32
+	GetAlphabet() *tilemapping.TileMapping
+	LexiconName() string
+	NextNodeIdx(nodeIdx uint32, letter tilemapping.MachineLetter) uint32
+	InLetterSet(letter tilemapping.MachineLetter, nodeIdx uint32) bool
+	GetLetterSet(nodeIdx uint32) tilemapping.LetterSet
+	IsEnd(nodeIdx uint32) bool
+	Accepts(nodeIdx uint32) bool
+	ArcIndex(nodeIdx uint32) uint32
+	Tile(nodeIdx uint32) uint8
+}
+
 // zero value works. not threadsafe.
-type KWGAnagrammer struct {
+type KWGAnagrammer[T WordGraphConstraint] struct {
 	ans         tilemapping.MachineWord
 	freq        []uint8
 	blanks      uint8
 	queryLength int
 }
 
-func (da *KWGAnagrammer) commonInit(kwg WordGraph) {
+func (da *KWGAnagrammer[T]) commonInit(kwg T) {
 	alph := kwg.GetAlphabet()
 	numLetters := alph.NumLetters()
 	if cap(da.freq) < int(numLetters) {
@@ -30,7 +45,7 @@ func (da *KWGAnagrammer) commonInit(kwg WordGraph) {
 	da.ans = da.ans[:0]
 }
 
-func (da *KWGAnagrammer) InitForString(kwg WordGraph, tiles string) error {
+func (da *KWGAnagrammer[T]) InitForString(kwg T, tiles string) error {
 	da.commonInit(kwg)
 	da.queryLength = 0
 	alph := kwg.GetAlphabet()
@@ -42,7 +57,7 @@ func (da *KWGAnagrammer) InitForString(kwg WordGraph, tiles string) error {
 	return da.InitForMachineWord(kwg, mls)
 }
 
-func (da *KWGAnagrammer) InitForMachineWord(kwg WordGraph, machineTiles tilemapping.MachineWord) error {
+func (da *KWGAnagrammer[T]) InitForMachineWord(kwg T, machineTiles tilemapping.MachineWord) error {
 	da.commonInit(kwg)
 	da.queryLength = len(machineTiles)
 	alph := kwg.GetAlphabet()
@@ -60,7 +75,7 @@ func (da *KWGAnagrammer) InitForMachineWord(kwg WordGraph, machineTiles tilemapp
 }
 
 // f must not modify the given slice. if f returns error, abort iteration.
-func (ka *KWGAnagrammer) iterate(kwg WordGraph, nodeIdx uint32, minLen int, minExact int, f func(tilemapping.MachineWord) error) error {
+func (ka *KWGAnagrammer[T]) iterate(kwg T, nodeIdx uint32, minLen int, minExact int, f func(tilemapping.MachineWord) error) error {
 	for ; ; nodeIdx++ {
 		j := kwg.Tile(nodeIdx)
 		if ka.freq[j] > 0 {
@@ -100,15 +115,15 @@ func (ka *KWGAnagrammer) iterate(kwg WordGraph, nodeIdx uint32, minLen int, minE
 	}
 }
 
-func (da *KWGAnagrammer) Anagram(dawg WordGraph, f func(tilemapping.MachineWord) error) error {
+func (da *KWGAnagrammer[T]) Anagram(dawg T, f func(tilemapping.MachineWord) error) error {
 	return da.iterate(dawg, dawg.ArcIndex(0), da.queryLength, 0, f)
 }
 
-func (da *KWGAnagrammer) Subanagram(dawg WordGraph, f func(tilemapping.MachineWord) error) error {
+func (da *KWGAnagrammer[T]) Subanagram(dawg T, f func(tilemapping.MachineWord) error) error {
 	return da.iterate(dawg, dawg.ArcIndex(0), 1, 0, f)
 }
 
-func (da *KWGAnagrammer) Superanagram(dawg WordGraph, f func(tilemapping.MachineWord) error) error {
+func (da *KWGAnagrammer[T]) Superanagram(dawg T, f func(tilemapping.MachineWord) error) error {
 	minExact := da.queryLength - int(da.blanks)
 	blanks := da.blanks
 	da.blanks = 255
@@ -125,7 +140,7 @@ func foundAnagram(tilemapping.MachineWord) error {
 }
 
 // checks if a word with no blanks has any valid anagrams.
-func (da *KWGAnagrammer) IsValidJumble(dawg WordGraph, word tilemapping.MachineWord) (bool, error) {
+func (da *KWGAnagrammer[T]) IsValidJumble(dawg T, word tilemapping.MachineWord) (bool, error) {
 	if err := da.InitForMachineWord(dawg, word); err != nil {
 		return false, err
 	} else if da.blanks > 0 {
