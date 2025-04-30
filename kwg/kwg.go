@@ -175,19 +175,30 @@ func (k *KWG) GetWordIndexOf(nodeIdx uint32, letters tilemapping.MachineWord) in
 }
 
 // KBWG is a "Big Word Graph" that uses 24 instead of 22 bits for the pointer.
-// It overrides the Tile and ArcIndex methods
+// All accessor functions (Tile, ArcIndex, IsEnd, Accepts) must be overridden
+// LSB to MSB:
+// typedef struct { uint8_t c : 6; bool e : 1, d : 1; uint32_t p : 24; } Kwg2NodeE;
+
 type KBWG struct {
 	KWG
 }
 
 // Override the Tile method for KBWG
 func (k *KBWG) Tile(nodeIdx uint32) uint8 {
-	return uint8(k.nodes[nodeIdx]>>24) & 0x3f
+	return uint8(k.nodes[nodeIdx]) & 0x3f
 }
 
 // Override the ArcIndex method for KBWG
 func (k *KBWG) ArcIndex(nodeIdx uint32) uint32 {
-	return k.nodes[nodeIdx] & 0xffffff
+	return k.nodes[nodeIdx] >> 8
+}
+
+func (k *KBWG) IsEnd(nodeIdx uint32) bool {
+	return k.nodes[nodeIdx]&0x40 != 0
+}
+
+func (k *KBWG) Accepts(nodeIdx uint32) bool {
+	return k.nodes[nodeIdx]&0x80 != 0
 }
 
 // ScanKBWG scans a KBWG from a reader
