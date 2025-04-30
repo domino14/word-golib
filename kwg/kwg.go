@@ -8,22 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// WordGraph represents a generic word graph interface
-type WordGraph interface {
-	GetRootNodeIndex() uint32
-	GetAlphabet() *tilemapping.TileMapping
-	LexiconName() string
-	NextNodeIdx(nodeIdx uint32, letter tilemapping.MachineLetter) uint32
-	InLetterSet(letter tilemapping.MachineLetter, nodeIdx uint32) bool
-	GetLetterSet(nodeIdx uint32) tilemapping.LetterSet
-	IsEnd(nodeIdx uint32) bool
-	Accepts(nodeIdx uint32) bool
-	ArcIndex(nodeIdx uint32) uint32
-	Tile(nodeIdx uint32) uint8
-	CountWords()
-	GetWordIndexOf(nodeIdx uint32, letters tilemapping.MachineWord) int32
-}
-
 // A KWG is a Kurnia Word Graph. More information is available here:
 // https://github.com/andy-k/wolges/blob/main/details.txt
 // Thanks to Andy Kurnia.
