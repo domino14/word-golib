@@ -134,40 +134,38 @@ func (ld *LetterDistribution) NumTotalLetters() uint {
 // the "standard" one for that lexicon.
 func ProbableLetterDistributionName(lexname string) (string, error) {
 	lexname = strings.ToLower(lexname)
+
 	var ldName string
-	switch {
-	case strings.HasPrefix(lexname, "nwl") ||
-		strings.HasPrefix(lexname, "nswl") ||
-		strings.HasPrefix(lexname, "twl") ||
-		strings.HasPrefix(lexname, "owl") ||
-		strings.HasPrefix(lexname, "csw") ||
-		strings.HasPrefix(lexname, "america") ||
-		strings.HasPrefix(lexname, "cel") ||
-		strings.HasPrefix(lexname, "ecwl"):
 
-		ldName = "english"
-
-	// more cases here
-	case strings.HasPrefix(lexname, "osps"):
-		ldName = "polish"
-	case strings.HasPrefix(lexname, "nsf"):
-		ldName = "norwegian"
-	case strings.HasPrefix(lexname, "fra"):
-		ldName = "french"
-	case strings.HasPrefix(lexname, "rd") ||
-		strings.HasPrefix(lexname, "deutsch") ||
-		strings.HasPrefix(lexname, "cgl"):
-		ldName = "german"
-	case strings.HasPrefix(lexname, "disc"):
-		ldName = "catalan"
-	case strings.HasPrefix(lexname, "fise") || strings.HasPrefix(lexname, "file"):
-		ldName = "spanish"
-	case strings.HasPrefix(lexname, "dsw"):
-		ldName = "dutch"
-	default:
-		return "", errors.New("cannot determine alphabet from lexicon name " + lexname)
+	prefixMap := map[string]string{
+		"nwl":     "english",
+		"nswl":    "english",
+		"twl":     "english",
+		"owl":     "english",
+		"csw":     "english",
+		"america": "english",
+		"cel":     "english",
+		"ecwl":    "english",
+		"iwi":     "english",
+		"osps":    "polish",
+		"nsf":     "norwegian",
+		"fra":     "french",
+		"rd":      "german",
+		"deutsch": "german",
+		"cgl":     "german",
+		"disc":    "catalan",
+		"fise":    "spanish",
+		"file":    "spanish",
+		"dsw":     "dutch",
 	}
-	return ldName, nil
+	for prefix, name := range prefixMap {
+		if strings.HasPrefix(lexname, prefix) {
+			ldName = name
+			return ldName, nil
+		}
+	}
+
+	return "", errors.New("cannot determine alphabet from lexicon name " + lexname)
 }
 
 // ProbableLetterDistribution returns a letter distribution given a lexicon name.
