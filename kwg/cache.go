@@ -124,13 +124,13 @@ func GetGraph[T WordGraphConstraint](cfg *config.Config, name string) (T, error)
 	var result T
 	switch any(result).(type) {
 	case *KWG:
-		k, err := getKWG(cfg, name)
+		k, err := GetKWG(cfg, name)
 		if err != nil {
 			return result, err
 		}
 		result = any(k).(T)
 	case *KBWG:
-		kb, err := getKBWG(cfg, name)
+		kb, err := GetKBWG(cfg, name)
 		if err != nil {
 			return result, err
 		}
@@ -141,8 +141,8 @@ func GetGraph[T WordGraphConstraint](cfg *config.Config, name string) (T, error)
 	return result, nil
 }
 
-// Get loads a named KWG from the cache or from a file (for backward compatibility)
-func getKWG(cfg *config.Config, name string) (*KWG, error) {
+// GetKWG loads a named KWG from the cache or from a file (for backward compatibility)
+func GetKWG(cfg *config.Config, name string) (*KWG, error) {
 	key := CacheKeyPrefixKWG + name
 	obj, err := cache.Load(cfg, key, CacheLoadFuncKWG)
 	if err != nil {
@@ -157,7 +157,7 @@ func getKWG(cfg *config.Config, name string) (*KWG, error) {
 }
 
 // GetKBWG loads a named KBWG from the cache or from a file
-func getKBWG(cfg *config.Config, name string) (*KBWG, error) {
+func GetKBWG(cfg *config.Config, name string) (*KBWG, error) {
 	key := CacheKeyPrefixKBWG + name
 	obj, err := cache.Load(cfg, key, CacheLoadFuncKBWG)
 	if err != nil {
