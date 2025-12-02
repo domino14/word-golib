@@ -1,7 +1,6 @@
 package tilemapping
 
 import (
-	"bytes"
 	"errors"
 	"path/filepath"
 	"strings"
@@ -41,19 +40,11 @@ func NamedLetterDistribution(cfg *config.Config, name string) (*LetterDistributi
 	return d, nil
 }
 
-// CacheReadFunc converts raw data when populating the global cache
-func CacheReadFunc(data []byte) (interface{}, error) {
-	stream := bytes.NewReader(data)
-	return ScanLetterDistribution(stream)
-}
-
-// Set loads an alphabet from bytes and populates the cache
-func Set(name string, data []byte) error {
-	key := CacheKeyPrefix + name
-	return cache.Populate(key, data, CacheReadFunc)
-}
-
-// Get loads a named alphabet from the cache or from a file
+// GetDistribution loads a named letter distribution from the cache or from a file.
+// The Name field is set when the distribution is first loaded into the cache
+// (via CacheLoadFunc -> NamedLetterDistribution), so callers receive a fully
+// initialized object. We intentionally do not modify the returned object here
+// to avoid data races when multiple goroutines access the same cached instance.
 func GetDistribution(cfg *config.Config, name string) (*LetterDistribution, error) {
 	key := CacheKeyPrefix + name
 	obj, err := cache.Load(cfg, key, CacheLoadFunc)
@@ -64,6 +55,5 @@ func GetDistribution(cfg *config.Config, name string) (*LetterDistribution, erro
 	if !ok {
 		return nil, errors.New("could not read letter distribution from file")
 	}
-	ret.Name = name
 	return ret, nil
 }
