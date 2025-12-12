@@ -18,6 +18,7 @@ type Bag struct {
 	tileMap            []uint8
 	letterDistribution *LetterDistribution
 	fixedOrder         bool
+	customRNG          *frand.RNG // optional custom RNG for deterministic draws
 }
 
 func copyTileMap(orig []uint8) []uint8 {
@@ -31,6 +32,12 @@ func copyTileMap(orig []uint8) []uint8 {
 // It is extremely recommended to do a shuffle first if you want to use fixed order.
 func (b *Bag) SetFixedOrder(f bool) {
 	b.fixedOrder = f
+}
+
+// SetRNG sets a custom RNG for deterministic randomness. This makes the bag's
+// shuffles and draws fully deterministic based on the RNG's seed.
+func (b *Bag) SetRNG(rng *frand.RNG) {
+	b.customRNG = rng
 }
 
 // Refill refills the bag.
@@ -69,7 +76,12 @@ func (b *Bag) Draw(n int, ml []MachineLetter) error {
 
 	if !b.fixedOrder {
 		for i := l; i > k; i-- {
-			xi := frand.Intn(i)
+			var xi int
+			if b.customRNG != nil {
+				xi = b.customRNG.Intn(i)
+			} else {
+				xi = frand.Intn(i)
+			}
 			// move the selected tile to the end
 			b.tiles[i-1], b.tiles[xi] = b.tiles[xi], b.tiles[i-1]
 		}
@@ -105,9 +117,15 @@ func (b *Bag) Tiles() []MachineLetter {
 // Shuffle shuffles the bag.
 func (b *Bag) Shuffle() {
 	// log.Debug().Int("numtiles", len(b.tiles)).Msg("shuffling bag")
-	frand.Shuffle(len(b.tiles), func(i, j int) {
-		b.tiles[i], b.tiles[j] = b.tiles[j], b.tiles[i]
-	})
+	if b.customRNG != nil {
+		b.customRNG.Shuffle(len(b.tiles), func(i, j int) {
+			b.tiles[i], b.tiles[j] = b.tiles[j], b.tiles[i]
+		})
+	} else {
+		frand.Shuffle(len(b.tiles), func(i, j int) {
+			b.tiles[i], b.tiles[j] = b.tiles[j], b.tiles[i]
+		})
+	}
 }
 
 // Exchange exchanges the junk in your rack with new tiles.
@@ -252,6 +270,7 @@ func (b *Bag) Copy() *Bag {
 		initialTileMap:     b.initialTileMap,
 		letterDistribution: b.letterDistribution,
 		fixedOrder:         b.fixedOrder,
+		customRNG:          b.customRNG,
 	}
 }
 
@@ -273,6 +292,7 @@ func (b *Bag) CopyFrom(other *Bag) {
 	b.tileMap = b.tileMap[:len(other.tileMap)]
 	copy(b.tileMap, other.tileMap)
 	b.fixedOrder = other.fixedOrder
+	b.customRNG = other.customRNG
 }
 
 func (b *Bag) LetterDistribution() *LetterDistribution {
