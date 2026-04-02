@@ -123,6 +123,10 @@ func (k *KWG) countWordsAt(p uint32) int {
 	return int(k.wordCounts[p])
 }
 
+func (k *KWG) WordCountAt(nodeIdx uint32) int32 {
+	return k.wordCounts[nodeIdx]
+}
+
 func (k *KWG) CountWords() {
 	k.wordCounts = make([]int32, len(k.nodes))
 	for p := len(k.wordCounts) - 1; p >= 0; p-- {
