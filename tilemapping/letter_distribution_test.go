@@ -32,3 +32,26 @@ func TestLetterDistributionWordScore(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(ld.WordScore(mls), 11)
 }
+
+func TestProbableLetterDistributionName(t *testing.T) {
+	is := is.New(t)
+
+	cases := []struct {
+		lexname string
+		want    string
+	}{
+		{"SLV26", "slovene"},
+		{"slv26", "slovene"},
+		{"NWL23", "english"},
+		{"CSW24", "english"},
+		{"OSPS50", "polish"},
+	}
+	for _, c := range cases {
+		got, err := ProbableLetterDistributionName(c.lexname)
+		is.NoErr(err)
+		is.Equal(got, c.want)
+	}
+
+	_, err := ProbableLetterDistributionName("WOW24")
+	is.True(err != nil)
+}
