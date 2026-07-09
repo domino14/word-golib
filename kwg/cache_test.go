@@ -73,7 +73,7 @@ func TestLoadWordGraphWithDistribution_KWG_OverridesUnrecognizedName(t *testing.
 	writeFakeDist(t, cfg, fakeDistOne, fakeDistOneContent)
 	path := writeFakeLexFile(t, cfg, "ZZZLEX02", ".kwg")
 
-	g, err := LoadWordGraphWithDistribution[*KWG](cfg, path, fakeDistOne)
+	g, err := LoadWordGraph[*KWG](cfg, path, WithDistribution(fakeDistOne))
 	is.NoErr(err)
 	is.Equal(g.LexiconName(), "ZZZLEX02")
 	is.True(g.GetAlphabet() != nil)
@@ -90,7 +90,7 @@ func TestLoadWordGraphWithDistribution_KWG_EmptyDistNameBehavesLikePlainLoad(t *
 	cfg := newTestConfig(t)
 	path := writeFakeLexFile(t, cfg, "ZZZLEX03", ".kwg")
 
-	_, errWithEmptyOverride := LoadWordGraphWithDistribution[*KWG](cfg, path, "")
+	_, errWithEmptyOverride := LoadWordGraph[*KWG](cfg, path, WithDistribution(""))
 	_, errPlain := LoadWordGraph[*KWG](cfg, path)
 
 	is.True(errWithEmptyOverride != nil)
@@ -113,7 +113,7 @@ func TestLoadWordGraphWithDistribution_KBWG_OverridesUnrecognizedName(t *testing
 	writeFakeDist(t, cfg, fakeDistTwo, fakeDistTwoContent)
 	path := writeFakeLexFile(t, cfg, "ZZZLEX05", ".kbwg")
 
-	g, err := LoadWordGraphWithDistribution[*KBWG](cfg, path, fakeDistTwo)
+	g, err := LoadWordGraph[*KBWG](cfg, path, WithDistribution(fakeDistTwo))
 	is.NoErr(err)
 	is.Equal(g.LexiconName(), "ZZZLEX05")
 
@@ -139,7 +139,7 @@ func TestGetKWGWithDistribution_UnrecognizedLexiconName_Succeeds(t *testing.T) {
 	writeFakeDist(t, cfg, fakeDistOne, fakeDistOneContent)
 	writeFakeLexFile(t, cfg, "ZZZLEX07", ".kwg")
 
-	g, err := GetKWGWithDistribution(cfg, "ZZZLEX07", fakeDistOne)
+	g, err := GetKWG(cfg, "ZZZLEX07", WithDistribution(fakeDistOne))
 	is.NoErr(err)
 	is.Equal(g.LexiconName(), "ZZZLEX07")
 }
@@ -151,9 +151,9 @@ func TestGetKWGWithDistribution_DifferentDistributionsCachedSeparately(t *testin
 	writeFakeDist(t, cfg, fakeDistTwo, fakeDistTwoContent)
 	writeFakeLexFile(t, cfg, "ZZZLEX08", ".kwg")
 
-	g1, err := GetKWGWithDistribution(cfg, "ZZZLEX08", fakeDistOne)
+	g1, err := GetKWG(cfg, "ZZZLEX08", WithDistribution(fakeDistOne))
 	is.NoErr(err)
-	g2, err := GetKWGWithDistribution(cfg, "ZZZLEX08", fakeDistTwo)
+	g2, err := GetKWG(cfg, "ZZZLEX08", WithDistribution(fakeDistTwo))
 	is.NoErr(err)
 
 	// Same lexicon, different distribution overrides: must not share a cache
@@ -162,7 +162,7 @@ func TestGetKWGWithDistribution_DifferentDistributionsCachedSeparately(t *testin
 
 	// Re-requesting the same (name, distribution) pair should hit the cache
 	// and return the exact same object, not reload from disk.
-	g1Again, err := GetKWGWithDistribution(cfg, "ZZZLEX08", fakeDistOne)
+	g1Again, err := GetKWG(cfg, "ZZZLEX08", WithDistribution(fakeDistOne))
 	is.NoErr(err)
 	is.True(g1 == g1Again)
 }
@@ -182,7 +182,7 @@ func TestGetKBWGWithDistribution_UnrecognizedLexiconName_Succeeds(t *testing.T) 
 	writeFakeDist(t, cfg, fakeDistTwo, fakeDistTwoContent)
 	writeFakeLexFile(t, cfg, "ZZZLEX10", ".kbwg")
 
-	g, err := GetKBWGWithDistribution(cfg, "ZZZLEX10", fakeDistTwo)
+	g, err := GetKBWG(cfg, "ZZZLEX10", WithDistribution(fakeDistTwo))
 	is.NoErr(err)
 	is.Equal(g.LexiconName(), "ZZZLEX10")
 	is.Equal(g.GetAlphabet().NumLetters(), uint8(4))
@@ -212,9 +212,9 @@ func TestGetGraphWithDistribution_KWG_MatchesGetKWGWithDistribution(t *testing.T
 	writeFakeDist(t, cfg, fakeDistOne, fakeDistOneContent)
 	writeFakeLexFile(t, cfg, "ZZZLEX13", ".kwg")
 
-	viaGeneric, err := GetGraphWithDistribution[*KWG](cfg, "ZZZLEX13", fakeDistOne)
+	viaGeneric, err := GetGraph[*KWG](cfg, "ZZZLEX13", WithDistribution(fakeDistOne))
 	is.NoErr(err)
-	viaSpecific, err := GetKWGWithDistribution(cfg, "ZZZLEX13", fakeDistOne)
+	viaSpecific, err := GetKWG(cfg, "ZZZLEX13", WithDistribution(fakeDistOne))
 	is.NoErr(err)
 
 	is.True(viaGeneric == viaSpecific)
@@ -226,9 +226,9 @@ func TestGetGraphWithDistribution_KBWG_MatchesGetKBWGWithDistribution(t *testing
 	writeFakeDist(t, cfg, fakeDistTwo, fakeDistTwoContent)
 	writeFakeLexFile(t, cfg, "ZZZLEX14", ".kbwg")
 
-	viaGeneric, err := GetGraphWithDistribution[*KBWG](cfg, "ZZZLEX14", fakeDistTwo)
+	viaGeneric, err := GetGraph[*KBWG](cfg, "ZZZLEX14", WithDistribution(fakeDistTwo))
 	is.NoErr(err)
-	viaSpecific, err := GetKBWGWithDistribution(cfg, "ZZZLEX14", fakeDistTwo)
+	viaSpecific, err := GetKBWG(cfg, "ZZZLEX14", WithDistribution(fakeDistTwo))
 	is.NoErr(err)
 
 	is.True(viaGeneric == viaSpecific)
@@ -239,6 +239,6 @@ func TestGetGraphWithDistribution_UnrecognizedLexiconName_ErrorsWithoutOverride(
 	cfg := newTestConfig(t)
 	writeFakeLexFile(t, cfg, "ZZZLEX15", ".kwg")
 
-	_, err := GetGraphWithDistribution[*KWG](cfg, "ZZZLEX15", "")
+	_, err := GetGraph[*KWG](cfg, "ZZZLEX15", WithDistribution(""))
 	is.True(err != nil)
 }

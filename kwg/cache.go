@@ -17,22 +17,37 @@ const (
 	CacheKeyPrefixKBWG = "kbwg:"
 )
 
-// LoadWordGraph loads either a KWG or KBWG based on the file extension.
-// The letter distribution (and thus alphabet) is guessed from the lexicon
-// name; use LoadWordGraphWithDistribution to override that guess explicitly.
-func LoadWordGraph[T WordGraphConstraint](cfg *config.Config, filename string) (T, error) {
-	return loadWordGraph[T](cfg, filename, "")
+// loadOpts holds the options settable via LoadOption.
+type loadOpts struct {
+	distName string
 }
 
-// LoadWordGraphWithDistribution loads either a KWG or KBWG based on the file
-// extension, using distName as the letter distribution (and thus alphabet)
-// instead of guessing it from the lexicon name. This allows callers to use
-// lexicon names that word-golib has no built-in knowledge of (e.g. a
-// user-defined lexicon), as long as the caller knows what letter
-// distribution it should use. If distName is empty, this behaves the same
-// as LoadWordGraph.
-func LoadWordGraphWithDistribution[T WordGraphConstraint](cfg *config.Config, filename, distName string) (T, error) {
-	return loadWordGraph[T](cfg, filename, distName)
+// LoadOption customizes how a KWG/KBWG is loaded. See WithDistribution.
+type LoadOption func(*loadOpts)
+
+// WithDistribution overrides the letter distribution used to resolve a
+// KWG/KBWG's alphabet, instead of guessing it from the lexicon name via
+// tilemapping.ProbableLetterDistribution. This is required for lexicon names
+// word-golib has no built-in knowledge of (e.g. a user-defined lexicon), as
+// long as the caller knows what letter distribution it should use.
+func WithDistribution(distName string) LoadOption {
+	return func(o *loadOpts) { o.distName = distName }
+}
+
+func resolveLoadOpts(opts []LoadOption) loadOpts {
+	var o loadOpts
+	for _, opt := range opts {
+		opt(&o)
+	}
+	return o
+}
+
+// LoadWordGraph loads either a KWG or KBWG based on the file extension. By
+// default, the letter distribution (and thus alphabet) is guessed from the
+// lexicon name; pass WithDistribution to override that guess explicitly.
+func LoadWordGraph[T WordGraphConstraint](cfg *config.Config, filename string, opts ...LoadOption) (T, error) {
+	o := resolveLoadOpts(opts)
+	return loadWordGraph[T](cfg, filename, o.distName)
 }
 
 func loadWordGraph[T WordGraphConstraint](cfg *config.Config, filename, distName string) (T, error) {
@@ -71,9 +86,8 @@ func loadWordGraph[T WordGraphConstraint](cfg *config.Config, filename, distName
 
 	// Note: we deliberately use the uncached NamedLetterDistribution here,
 	// not GetDistribution. This function runs inside a locked cache.Load
-	// call (from GetKWG/GetKWGWithDistribution/etc.), and GetDistribution
-	// itself calls cache.Load, which would deadlock on the non-reentrant
-	// cache mutex.
+	// call (from GetKWG/GetKBWG/etc.), and GetDistribution itself calls
+	// cache.Load, which would deadlock on the non-reentrant cache mutex.
 	var ld *tilemapping.LetterDistribution
 	if distName != "" {
 		ld, err = tilemapping.NamedLetterDistribution(cfg, distName)
@@ -99,13 +113,13 @@ func loadWordGraph[T WordGraphConstraint](cfg *config.Config, filename, distName
 }
 
 // LoadKWG loads a KWG from a file (for backward compatibility)
-func LoadKWG(cfg *config.Config, filename string) (*KWG, error) {
-	return LoadWordGraph[*KWG](cfg, filename)
+func LoadKWG(cfg *config.Config, filename string, opts ...LoadOption) (*KWG, error) {
+	return LoadWordGraph[*KWG](cfg, filename, opts...)
 }
 
 // LoadKBWG loads a KBWG from a file
-func LoadKBWG(cfg *config.Config, filename string) (*KBWG, error) {
-	return LoadWordGraph[*KBWG](cfg, filename)
+func LoadKBWG(cfg *config.Config, filename string, opts ...LoadOption) (*KBWG, error) {
+	return LoadWordGraph[*KBWG](cfg, filename, opts...)
 }
 
 // CacheLoadFuncKWG is the function that loads a KWG into the global cache
@@ -125,9 +139,9 @@ func loadKWGFile(cfg *config.Config, lexiconName, distName string) (interface{},
 	kwgPrefix := cfg.KWGPathPrefix
 
 	if kwgPrefix == "" {
-		return LoadWordGraphWithDistribution[*KWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"), distName)
+		return loadWordGraph[*KWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kwg"), distName)
 	}
-	return LoadWordGraphWithDistribution[*KWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kwg"), distName)
+	return loadWordGraph[*KWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kwg"), distName)
 }
 
 func loadKBWGFile(cfg *config.Config, lexiconName, distName string) (interface{}, error) {
@@ -135,22 +149,25 @@ func loadKBWGFile(cfg *config.Config, lexiconName, distName string) (interface{}
 	kwgPrefix := cfg.KWGPathPrefix
 
 	if kwgPrefix == "" {
-		return LoadWordGraphWithDistribution[*KBWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kbwg"), distName)
+		return loadWordGraph[*KBWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", lexiconName+".kbwg"), distName)
 	}
-	return LoadWordGraphWithDistribution[*KBWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kbwg"), distName)
+	return loadWordGraph[*KBWG](cfg, filepath.Join(dataPath, "lexica", "gaddag", kwgPrefix, lexiconName+".kbwg"), distName)
 }
 
-func GetGraph[T WordGraphConstraint](cfg *config.Config, name string) (T, error) {
+// GetGraph loads a named KWG or KBWG from the cache or from a file. By
+// default, the letter distribution (and thus alphabet) is guessed from the
+// lexicon name; pass WithDistribution to override that guess explicitly.
+func GetGraph[T WordGraphConstraint](cfg *config.Config, name string, opts ...LoadOption) (T, error) {
 	var result T
 	switch any(result).(type) {
 	case *KWG:
-		k, err := GetKWG(cfg, name)
+		k, err := GetKWG(cfg, name, opts...)
 		if err != nil {
 			return result, err
 		}
 		result = any(k).(T)
 	case *KBWG:
-		kb, err := GetKBWG(cfg, name)
+		kb, err := GetKBWG(cfg, name, opts...)
 		if err != nil {
 			return result, err
 		}
@@ -161,57 +178,18 @@ func GetGraph[T WordGraphConstraint](cfg *config.Config, name string) (T, error)
 	return result, nil
 }
 
-// GetGraphWithDistribution loads a named KWG or KBWG from the cache or from a
-// file, using distName as the letter distribution instead of guessing it
-// from the lexicon name. See LoadWordGraphWithDistribution.
-func GetGraphWithDistribution[T WordGraphConstraint](cfg *config.Config, name, distName string) (T, error) {
-	var result T
-	switch any(result).(type) {
-	case *KWG:
-		k, err := GetKWGWithDistribution(cfg, name, distName)
-		if err != nil {
-			return result, err
-		}
-		result = any(k).(T)
-	case *KBWG:
-		kb, err := GetKBWGWithDistribution(cfg, name, distName)
-		if err != nil {
-			return result, err
-		}
-		result = any(kb).(T)
-	default:
-		return result, errors.New("unsupported graph type")
-	}
-	return result, nil
-}
-
-// GetKWG loads a named KWG from the cache or from a file (for backward compatibility)
-func GetKWG(cfg *config.Config, name string) (*KWG, error) {
+// GetKWG loads a named KWG from the cache or from a file. By default, the
+// letter distribution (and thus alphabet) is guessed from the lexicon name;
+// pass WithDistribution to override that guess explicitly, which is required
+// for lexicon names word-golib has no built-in knowledge of.
+func GetKWG(cfg *config.Config, name string, opts ...LoadOption) (*KWG, error) {
+	o := resolveLoadOpts(opts)
 	key := CacheKeyPrefixKWG + name
-	obj, err := cache.Load(cfg, key, CacheLoadFuncKWG)
-	if err != nil {
-		return nil, err
-	}
-
-	kwg, ok := obj.(*KWG)
-	if !ok {
-		return nil, errors.New("could not convert cached object to KWG")
-	}
-	return kwg, nil
-}
-
-// GetKWGWithDistribution loads a named KWG from the cache or from a file,
-// using distName as the letter distribution instead of guessing it from the
-// lexicon name. This is useful for lexicon names that word-golib has no
-// built-in knowledge of. If distName is empty, this behaves the same as
-// GetKWG.
-func GetKWGWithDistribution(cfg *config.Config, name, distName string) (*KWG, error) {
-	key := CacheKeyPrefixKWG + name
-	if distName != "" {
-		key += ":" + strings.ToLower(distName)
+	if o.distName != "" {
+		key += ":" + strings.ToLower(o.distName)
 	}
 	obj, err := cache.Load(cfg, key, func(cfg *config.Config, _ string) (interface{}, error) {
-		return loadKWGFile(cfg, name, distName)
+		return loadKWGFile(cfg, name, o.distName)
 	})
 	if err != nil {
 		return nil, err
@@ -224,31 +202,15 @@ func GetKWGWithDistribution(cfg *config.Config, name, distName string) (*KWG, er
 	return kwg, nil
 }
 
-// GetKBWG loads a named KBWG from the cache or from a file
-func GetKBWG(cfg *config.Config, name string) (*KBWG, error) {
+// GetKBWG loads a named KBWG from the cache or from a file. See GetKWG.
+func GetKBWG(cfg *config.Config, name string, opts ...LoadOption) (*KBWG, error) {
+	o := resolveLoadOpts(opts)
 	key := CacheKeyPrefixKBWG + name
-	obj, err := cache.Load(cfg, key, CacheLoadFuncKBWG)
-	if err != nil {
-		return nil, err
-	}
-
-	kbwg, ok := obj.(*KBWG)
-	if !ok {
-		return nil, errors.New("could not convert cached object to KBWG")
-	}
-	return kbwg, nil
-}
-
-// GetKBWGWithDistribution loads a named KBWG from the cache or from a file,
-// using distName as the letter distribution instead of guessing it from the
-// lexicon name. If distName is empty, this behaves the same as GetKBWG.
-func GetKBWGWithDistribution(cfg *config.Config, name, distName string) (*KBWG, error) {
-	key := CacheKeyPrefixKBWG + name
-	if distName != "" {
-		key += ":" + strings.ToLower(distName)
+	if o.distName != "" {
+		key += ":" + strings.ToLower(o.distName)
 	}
 	obj, err := cache.Load(cfg, key, func(cfg *config.Config, _ string) (interface{}, error) {
-		return loadKBWGFile(cfg, name, distName)
+		return loadKBWGFile(cfg, name, o.distName)
 	})
 	if err != nil {
 		return nil, err
