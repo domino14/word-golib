@@ -158,7 +158,7 @@ func ProbableLetterDistributionName(lexname string) (string, error) {
 		"file":    "spanish",
 		"dsw":     "dutch",
 		"slv":     "slovene",
-		"swedish": "swedish",
+		"saol":    "swedish",
 	}
 	for prefix, name := range prefixMap {
 		if strings.HasPrefix(lexname, prefix) {
