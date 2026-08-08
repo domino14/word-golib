@@ -42,6 +42,34 @@ func resolveLoadOpts(opts []LoadOption) loadOpts {
 	return o
 }
 
+// canonicalDistName resolves the letter distribution a graph will actually be
+// loaded with. An empty distName means "guess from the lexicon name", which is
+// exactly what loadWordGraph would do, so resolving it here yields the same
+// distribution by a different route.
+func canonicalDistName(lexiconName, distName string) (string, error) {
+	if distName == "" {
+		return tilemapping.ProbableLetterDistributionName(lexiconName)
+	}
+	return strings.ToLower(distName), nil
+}
+
+// graphCacheKey builds the GlobalObjectCache key for a word graph. The key
+// always carries the *canonical* distribution name rather than the raw
+// LoadOption value, so that a caller passing WithDistribution("english") and a
+// caller letting the distribution be guessed from the lexicon name land on the
+// same entry. That cache is never evicted, so a key that varies by call site
+// would keep a second full copy of every lexicon both call sites touch resident
+// for the lifetime of the process.
+func graphCacheKey(prefix, lexiconName, canonicalDist string) string {
+	return prefix + lexiconName + ":" + canonicalDist
+}
+
+// splitGraphCacheKey is the inverse of graphCacheKey.
+func splitGraphCacheKey(key, prefix string) (lexiconName, distName string) {
+	lexiconName, distName, _ = strings.Cut(strings.TrimPrefix(key, prefix), ":")
+	return lexiconName, distName
+}
+
 // LoadWordGraph loads either a KWG or KBWG based on the file extension. By
 // default, the letter distribution (and thus alphabet) is guessed from the
 // lexicon name; pass WithDistribution to override that guess explicitly.
@@ -124,14 +152,14 @@ func LoadKBWG(cfg *config.Config, filename string, opts ...LoadOption) (*KBWG, e
 
 // CacheLoadFuncKWG is the function that loads a KWG into the global cache
 func CacheLoadFuncKWG(cfg *config.Config, key string) (interface{}, error) {
-	lexiconName := strings.TrimPrefix(key, CacheKeyPrefixKWG)
-	return loadKWGFile(cfg, lexiconName, "")
+	lexiconName, distName := splitGraphCacheKey(key, CacheKeyPrefixKWG)
+	return loadKWGFile(cfg, lexiconName, distName)
 }
 
 // CacheLoadFuncKBWG is the function that loads a KBWG into the global cache
 func CacheLoadFuncKBWG(cfg *config.Config, key string) (interface{}, error) {
-	lexiconName := strings.TrimPrefix(key, CacheKeyPrefixKBWG)
-	return loadKBWGFile(cfg, lexiconName, "")
+	lexiconName, distName := splitGraphCacheKey(key, CacheKeyPrefixKBWG)
+	return loadKBWGFile(cfg, lexiconName, distName)
 }
 
 func loadKWGFile(cfg *config.Config, lexiconName, distName string) (interface{}, error) {
@@ -184,12 +212,13 @@ func GetGraph[T WordGraphConstraint](cfg *config.Config, name string, opts ...Lo
 // for lexicon names word-golib has no built-in knowledge of.
 func GetKWG(cfg *config.Config, name string, opts ...LoadOption) (*KWG, error) {
 	o := resolveLoadOpts(opts)
-	key := CacheKeyPrefixKWG + name
-	if o.distName != "" {
-		key += ":" + strings.ToLower(o.distName)
+	distName, err := canonicalDistName(name, o.distName)
+	if err != nil {
+		return nil, err
 	}
+	key := graphCacheKey(CacheKeyPrefixKWG, name, distName)
 	obj, err := cache.Load(cfg, key, func(cfg *config.Config, _ string) (interface{}, error) {
-		return loadKWGFile(cfg, name, o.distName)
+		return loadKWGFile(cfg, name, distName)
 	})
 	if err != nil {
 		return nil, err
@@ -205,12 +234,13 @@ func GetKWG(cfg *config.Config, name string, opts ...LoadOption) (*KWG, error) {
 // GetKBWG loads a named KBWG from the cache or from a file. See GetKWG.
 func GetKBWG(cfg *config.Config, name string, opts ...LoadOption) (*KBWG, error) {
 	o := resolveLoadOpts(opts)
-	key := CacheKeyPrefixKBWG + name
-	if o.distName != "" {
-		key += ":" + strings.ToLower(o.distName)
+	distName, err := canonicalDistName(name, o.distName)
+	if err != nil {
+		return nil, err
 	}
+	key := graphCacheKey(CacheKeyPrefixKBWG, name, distName)
 	obj, err := cache.Load(cfg, key, func(cfg *config.Config, _ string) (interface{}, error) {
-		return loadKBWGFile(cfg, name, o.distName)
+		return loadKBWGFile(cfg, name, distName)
 	})
 	if err != nil {
 		return nil, err

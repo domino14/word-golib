@@ -167,6 +167,48 @@ func TestGetKWGWithDistribution_DifferentDistributionsCachedSeparately(t *testin
 	is.True(g1 == g1Again)
 }
 
+// A lexicon whose distribution the guesser *can* resolve ("csw" -> "english"),
+// used to pin the equivalence between guessed and explicitly-passed
+// distributions. The other fixtures here deliberately use unguessable
+// "zzz"-prefixed names, which cannot exercise that path.
+const guessableLex = "CSWZZZ01"
+
+func TestGetKWG_GuessedAndExplicitDistributionShareOneCacheEntry(t *testing.T) {
+	is := is.New(t)
+	cfg := newTestConfig(t)
+	writeFakeDist(t, cfg, "english", fakeDistOneContent)
+	writeFakeLexFile(t, cfg, guessableLex, ".kwg")
+
+	// macondo passes the distribution explicitly; liwords lets it be guessed.
+	// Both run in the same process, and the graph cache is never evicted, so if
+	// these disagree on the cache key every shared lexicon is held twice.
+	guessed, err := GetKWG(cfg, guessableLex)
+	is.NoErr(err)
+	explicit, err := GetKWG(cfg, guessableLex, WithDistribution("english"))
+	is.NoErr(err)
+
+	is.True(guessed == explicit)
+
+	// Casing of the explicit override must not split the entry either.
+	upper, err := GetKWG(cfg, guessableLex, WithDistribution("ENGLISH"))
+	is.NoErr(err)
+	is.True(guessed == upper)
+}
+
+func TestGetKBWG_GuessedAndExplicitDistributionShareOneCacheEntry(t *testing.T) {
+	is := is.New(t)
+	cfg := newTestConfig(t)
+	writeFakeDist(t, cfg, "english", fakeDistOneContent)
+	writeFakeLexFile(t, cfg, "CSWZZZ02", ".kbwg")
+
+	guessed, err := GetKBWG(cfg, "CSWZZZ02")
+	is.NoErr(err)
+	explicit, err := GetKBWG(cfg, "CSWZZZ02", WithDistribution("english"))
+	is.NoErr(err)
+
+	is.True(guessed == explicit)
+}
+
 func TestGetKBWG_UnrecognizedLexiconName_ErrorsWithoutOverride(t *testing.T) {
 	is := is.New(t)
 	cfg := newTestConfig(t)
