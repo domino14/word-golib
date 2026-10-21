@@ -25,8 +25,11 @@ jobs:
           token: ${{ secrets.LEXICA_GH_PAT }}
 
       - run: mv $GITHUB_WORKSPACE/word-game-lexica /opt/word-game-lexica
-      - run: mkdir -p /opt/data/lexica/gaddag
-      - run: mv /opt/word-game-lexica/gaddag/*.kwg /opt/data/lexica/gaddag
+      # Word graphs aren't committed to the lexica repo; its script builds or
+      # fetches them.
+      - run: >
+          /opt/word-game-lexica/build_kwgs.sh /opt/data/lexica/gaddag
+          America CSW15 CSW19 CSW21 CSW24 DISC2 ECWL FISE2 FRA20 FRA24 NSF22 NWL18 NWL20 NWL23 OSPS49 OSPS50 RD28
       - run: mv /opt/word-game-lexica/letterdistributions /opt/data/letterdistributions
 
       - name: Setup Go
