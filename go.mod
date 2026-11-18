@@ -6,7 +6,6 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
-	lukechampine.com/frand v1.5.1
 )
 
 require (

@@ -1,6 +1,7 @@
 package tilemapping
 
 import (
+	"math/rand/v2"
 	"reflect"
 	"sort"
 	"testing"
@@ -140,4 +141,40 @@ func TestFixedOrder(t *testing.T) {
 	is.NoErr(err)
 
 	is.Equal(ml, []MachineLetter{4, 4, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0})
+}
+
+// Two bags given sources with the same seed draw the same tiles, and a
+// source started again from its seed deals what a new one would.
+func TestSeededBag(t *testing.T) {
+	is := is.New(t)
+	ld, err := EnglishLetterDistribution(config.DefaultConfig)
+	is.NoErr(err)
+
+	seed := [32]byte{1, 2, 3}
+	deal := func(bag *Bag) []MachineLetter {
+		bag.Refill()
+		ml := make([]MachineLetter, 7)
+		is.NoErr(bag.Draw(7, ml))
+		return ml
+	}
+
+	a, b := ld.MakeBag(), ld.MakeBag()
+	a.SetRNG(rand.New(rand.NewChaCha8(seed)))
+	src := rand.NewChaCha8(seed)
+	b.SetRNG(rand.New(src))
+	first := deal(a)
+	is.Equal(first, deal(b))
+
+	// The streams have moved on, so the next deals differ from the first...
+	second := deal(a)
+	is.Equal(second, deal(b))
+	is.True(!reflect.DeepEqual(first, second))
+
+	// ...until the source is put back to its seed.
+	src.Seed(seed)
+	is.Equal(first, deal(b))
+
+	other := ld.MakeBag()
+	other.SetRNG(rand.New(rand.NewChaCha8([32]byte{9})))
+	is.True(!reflect.DeepEqual(first, deal(other)))
 }

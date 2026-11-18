@@ -3,9 +3,9 @@ package tilemapping
 import (
 	"errors"
 	"fmt"
+	"math/rand/v2"
 
 	"github.com/rs/zerolog/log"
-	"lukechampine.com/frand"
 )
 
 // A Bag is the bag o'tiles!
@@ -18,7 +18,7 @@ type Bag struct {
 	tileMap            []uint8
 	letterDistribution *LetterDistribution
 	fixedOrder         bool
-	customRNG          *frand.RNG // optional custom RNG for deterministic draws
+	customRNG          *rand.Rand // optional custom RNG for deterministic draws
 }
 
 func copyTileMap(orig []uint8) []uint8 {
@@ -35,8 +35,14 @@ func (b *Bag) SetFixedOrder(f bool) {
 }
 
 // SetRNG sets a custom RNG for deterministic randomness. This makes the bag's
-// shuffles and draws fully deterministic based on the RNG's seed.
-func (b *Bag) SetRNG(rng *frand.RNG) {
+// shuffles and draws fully deterministic based on the RNG's seed. Without
+// one the bag uses math/rand/v2's global generator.
+//
+// For a seeded, cryptographically strong source use
+// rand.New(rand.NewChaCha8(seed)). A caller that keeps the *rand.ChaCha8 can
+// start the bag's randomness again with its Seed method, without making a
+// new generator.
+func (b *Bag) SetRNG(rng *rand.Rand) {
 	b.customRNG = rng
 }
 
@@ -78,9 +84,9 @@ func (b *Bag) Draw(n int, ml []MachineLetter) error {
 		for i := l; i > k; i-- {
 			var xi int
 			if b.customRNG != nil {
-				xi = b.customRNG.Intn(i)
+				xi = b.customRNG.IntN(i)
 			} else {
-				xi = frand.Intn(i)
+				xi = rand.IntN(i)
 			}
 			// move the selected tile to the end
 			b.tiles[i-1], b.tiles[xi] = b.tiles[xi], b.tiles[i-1]
@@ -122,7 +128,7 @@ func (b *Bag) Shuffle() {
 			b.tiles[i], b.tiles[j] = b.tiles[j], b.tiles[i]
 		})
 	} else {
-		frand.Shuffle(len(b.tiles), func(i, j int) {
+		rand.Shuffle(len(b.tiles), func(i, j int) {
 			b.tiles[i], b.tiles[j] = b.tiles[j], b.tiles[i]
 		})
 	}
